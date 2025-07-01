@@ -37,7 +37,7 @@ async def start_transcoding(
     input_url: HttpUrl,
     background_tasks: BackgroundTasks,
     output_host: str = "localhost",
-    output_port: int = 8080
+    output_port: int = 80
 ):
     global transcoding_engine, active_streams
     
@@ -116,6 +116,26 @@ async def list_active_streams():
     }
 
 
+@app.get("/uris")
+async def get_all_uris():
+    """Return all available stream URIs from active streams."""
+    all_uris = []
+    
+    for stream_id, stream_data in active_streams.items():
+        variants = stream_data.get("variants", {})
+        for variant_name, variant_uri in variants.items():
+            all_uris.append({
+                "stream_id": stream_id,
+                "variant_name": variant_name,
+                "uri": variant_uri
+            })
+    
+    return {
+        "total_uris": len(all_uris),
+        "uris": all_uris
+    }
+
+
 @app.delete("/streams/{stream_id}")
 async def stop_stream(stream_id: str):
     global transcoding_engine, active_streams
@@ -184,6 +204,7 @@ async def root():
         "endpoints": {
             "start_transcoding": "POST /start-transcoding",
             "list_streams": "GET /streams", 
+            "get_all_uris": "GET /uris",
             "stop_stream": "DELETE /streams/{stream_id}",
             "serve_playlist": "GET /{variant_name}.m3u8",
             "serve_segment": "GET /{segment_name}",

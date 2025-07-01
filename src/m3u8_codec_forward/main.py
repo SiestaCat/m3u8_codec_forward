@@ -16,7 +16,7 @@ def main():
     parser = argparse.ArgumentParser(description="M3U8 Codec Forward Server")
     parser.add_argument("--config", type=str, help="Path to configuration file")
     parser.add_argument("--host", type=str, default="0.0.0.0", help="Server host")
-    parser.add_argument("--port", type=int, default=8080, help="Server port")
+    parser.add_argument("--port", type=int, default=80, help="Server port")
     parser.add_argument("--log-level", type=str, default="INFO", 
                        choices=["DEBUG", "INFO", "WARNING", "ERROR"],
                        help="Logging level")

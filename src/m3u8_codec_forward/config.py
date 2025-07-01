@@ -9,7 +9,7 @@ from .models import StreamVariant, CodecType, AudioCodec, Resolution, ContainerF
 
 class AppConfig(BaseModel):
     server_host: str = "0.0.0.0"
-    server_port: int = 8080
+    server_port: int = 80
     working_dir: Optional[str] = None
     log_level: str = "INFO"
     max_concurrent_streams: int = 5

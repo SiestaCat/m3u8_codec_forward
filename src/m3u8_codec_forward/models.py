@@ -103,5 +103,5 @@ class StreamInfo(BaseModel):
 class TranscodingConfig(BaseModel):
     input_url: HttpUrl
     output_variants: List[StreamVariant]
-    output_port: int = 8080
+    output_port: int = 80
     output_host: str = "localhost"

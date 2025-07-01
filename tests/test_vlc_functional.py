@@ -90,10 +90,10 @@ class TestVLCServiceIntegration:
         
         # Mock successful transcoding
         mock_start_transcoding.return_value = {
-            "h264_1920x1080_5000k_ts": "http://localhost:8080/h264_1920x1080_5000k_ts.m3u8",
-            "h264_1280x720_3000k_ts": "http://localhost:8080/h264_1280x720_3000k_ts.m3u8",
-            "h265_1920x1080_3000k_fmp4": "http://localhost:8080/h265_1920x1080_3000k_fmp4.m3u8",
-            "vp9_1280x720_2500k_webm": "http://localhost:8080/vp9_1280x720_2500k_webm.m3u8"
+            "h264_1920x1080_5000k_ts": "http://localhost:80/h264_1920x1080_5000k_ts.m3u8",
+            "h264_1280x720_3000k_ts": "http://localhost:80/h264_1280x720_3000k_ts.m3u8",
+            "h265_1920x1080_3000k_fmp4": "http://localhost:80/h265_1920x1080_3000k_fmp4.m3u8",
+            "vp9_1280x720_2500k_webm": "http://localhost:80/vp9_1280x720_2500k_webm.m3u8"
         }
         
         # Test the API endpoint
@@ -221,7 +221,7 @@ class TestVLCStreamValidation:
         tester = VLCTester(vlc_timeout=20)
         try:
             # Test validation structure with mock URLs
-            base_url = "http://localhost:8080"
+            base_url = "http://localhost:80"
             variants = [
                 "h264_1920x1080_5000k_ts",
                 "h265_1280x720_3000k_fmp4",
