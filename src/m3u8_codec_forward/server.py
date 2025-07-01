@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.responses import FileResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import HttpUrl
 from typing import Dict, Optional
 import logging
@@ -30,6 +31,15 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="M3U8 Codec Forward", version="0.1.0", lifespan=lifespan)
+
+# Configure CORS to allow browser access
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins for development
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all methods
+    allow_headers=["*"],  # Allow all headers
+)
 
 
 @app.post("/start-transcoding")
@@ -257,6 +267,24 @@ async def serve_playlist(variant_name: str, input_url: HttpUrl = None):
     )
 
 
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "service": "m3u8-codec-forward"}
+
+
+@app.get("/api")
+async def serve_api_html():
+    """Serve the API HTML interface"""
+    api_html_path = Path(__file__).parent.parent.parent / "api.html"
+    if api_html_path.exists():
+        return FileResponse(
+            path=str(api_html_path),
+            media_type="text/html"
+        )
+    else:
+        raise HTTPException(status_code=404, detail="API interface not found")
+
+
 @app.get("/{segment_name}")
 async def serve_segment(segment_name: str):
     global transcoding_engine
@@ -273,11 +301,6 @@ async def serve_segment(segment_name: str):
         path=str(segment_path),
         media_type="video/mp2t"
     )
-
-
-@app.get("/health")
-async def health_check():
-    return {"status": "healthy", "service": "m3u8-codec-forward"}
 
 
 @app.get("/")

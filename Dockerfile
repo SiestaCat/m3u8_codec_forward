@@ -21,6 +21,7 @@ COPY src/ ./src/
 COPY tests/ ./tests/
 COPY setup.py .
 COPY pytest.ini .
+COPY api.html .
 
 # Install the package
 RUN pip install -e .
