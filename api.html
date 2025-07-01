@@ -360,12 +360,12 @@
     </div>
 
     <script>
-        const API_BASE = 'http://localhost:8080';
+        const API_BASE = window.location.origin;
 
         async function startTranscoding() {
             const inputUrl = document.getElementById('inputUrl').value;
-            const outputHost = document.getElementById('outputHost').value || 'localhost';
-            const outputPort = document.getElementById('outputPort').value || '8080';
+            const outputHost = document.getElementById('outputHost').value || 'web-m3u8-codec-forward.kkv0rf.easypanel.host';
+            const outputPort = document.getElementById('outputPort').value || '443';
 
             if (!inputUrl) {
                 showError('transcodingResult', 'Please enter a valid M3U8 URL');
