@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M3U8 Codec Forward - API Interface</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.25);
+        }
+
+        .card h2 {
+            color: #2a5298;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #2a5298;
+        }
+
+        .btn {
+            background: #2a5298;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+        }
+
+        .btn:hover {
+            background: #1e3c72;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .result-container {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .result-container h3 {
+            color: #2a5298;
+            margin-bottom: 15px;
+        }
+
+        .variant-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .variant-item:hover {
+            border-color: #2a5298;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .variant-info {
+            flex: 1;
+        }
+
+        .variant-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .variant-url {
+            font-size: 14px;
+            color: #666;
+            word-break: break-all;
+        }
+
+        .copy-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            font-size: 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: #218838;
+        }
+
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #2a5298;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2a5298;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .default-input {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+            
+            .variant-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .copy-btn {
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎬 M3U8 Codec Forward</h1>
+            <p>Real-time M3U8 stream transcoding with multiple codec outputs</p>
+        </div>
+
+        <!-- Start Transcoding Card -->
+        <div class="card">
+            <h2>Start Transcoding</h2>
+            <div class="input-group">
+                <label for="inputUrl">M3U8 Stream URL</label>
+                <input 
+                    type="url" 
+                    id="inputUrl" 
+                    placeholder="https://example.com/stream.m3u8"
+                    value="https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8"
+                >
+                <div class="default-input">Default: Apple's test stream</div>
+            </div>
+            <div class="input-group">
+                <label for="outputHost">Output Host (optional)</label>
+                <input 
+                    type="text" 
+                    id="outputHost" 
+                    placeholder="localhost"
+                    value="localhost"
+                >
+            </div>
+            <div class="input-group">
+                <label for="outputPort">Output Port (optional)</label>
+                <input 
+                    type="number" 
+                    id="outputPort" 
+                    placeholder="8080"
+                    value="8080"
+                >
+            </div>
+            <button class="btn" onclick="startTranscoding()">
+                Start Transcoding
+            </button>
+            <button class="btn btn-secondary" onclick="clearTranscodingForm()">
+                Clear
+            </button>
+            
+            <div id="transcodingResult"></div>
+        </div>
+
+        <!-- Active Streams Card -->
+        <div class="card">
+            <h2>Active Streams</h2>
+            <button class="btn" onclick="getActiveStreams()">
+                Get All URIs
+            </button>
+            <button class="btn btn-secondary" onclick="listStreams()">
+                List Streams
+            </button>
+            <button class="btn btn-danger" onclick="stopAllStreams()">
+                Stop All Streams
+            </button>
+            
+            <div id="streamsResult"></div>
+        </div>
+
+        <!-- Stream Statistics -->
+        <div class="card">
+            <h2>Stream Statistics</h2>
+            <div id="stats" class="stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalStreams">0</div>
+                    <div class="stat-label">Active Streams</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalVariants">0</div>
+                    <div class="stat-label">Total Variants</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalCodecs">0</div>
+                    <div class="stat-label">Codec Types</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080';
+
+        async function startTranscoding() {
+            const inputUrl = document.getElementById('inputUrl').value;
+            const outputHost = document.getElementById('outputHost').value || 'localhost';
+            const outputPort = document.getElementById('outputPort').value || '8080';
+
+            if (!inputUrl) {
+                showError('transcodingResult', 'Please enter a valid M3U8 URL');
+                return;
+            }
+
+            const resultDiv = document.getElementById('transcodingResult');
+            resultDiv.innerHTML = '<span class="loading"></span> Starting transcoding...';
+
+            try {
+                const params = new URLSearchParams({
+                    input_url: inputUrl,
+                    output_host: outputHost,
+                    output_port: outputPort
+                });
+
+                const response = await fetch(`${API_BASE}/start-transcoding?${params}`, {
+                    method: 'POST'
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showTranscodingSuccess(data);
+                    updateStats();
+                } else {
+                    showError('transcodingResult', data.detail || 'Failed to start transcoding');
+                }
+            } catch (error) {
+                showError('transcodingResult', `Error: ${error.message}`);
+            }
+        }
+
+        function showTranscodingSuccess(data) {
+            const resultDiv = document.getElementById('transcodingResult');
+            
+            let html = '<div class="success">✅ ' + data.message + '</div>';
+            html += '<div class="result-container">';
+            html += '<h3>Generated Variants</h3>';
+            
+            for (const [variantName, url] of Object.entries(data.variants)) {
+                html += `
+                    <div class="variant-item">
+                        <div class="variant-info">
+                            <div class="variant-name">${variantName}</div>
+                            <div class="variant-url">${url}</div>
+                        </div>
+                        <button class="copy-btn" onclick="copyToClipboard('${url}')">Copy URL</button>
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            resultDiv.innerHTML = html;
+        }
+
+        async function getActiveStreams() {
+            const resultDiv = document.getElementById('streamsResult');
+            resultDiv.innerHTML = '<span class="loading"></span> Loading streams...';
+
+            try {
+                const response = await fetch(`${API_BASE}/uris`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    showActiveStreams(data);
+                    updateStats();
+                } else {
+                    showError('streamsResult', data.detail || 'Failed to get streams');
+                }
+            } catch (error) {
+                showError('streamsResult', `Error: ${error.message}`);
+            }
+        }
+
+        function showActiveStreams(data) {
+            const resultDiv = document.getElementById('streamsResult');
+            
+            if (data.total_uris === 0) {
+                resultDiv.innerHTML = '<div class="error">No active streams found</div>';
+                return;
+            }
+
+            let html = '<div class="result-container">';
+            html += `<h3>Active Stream URIs (${data.total_uris})</h3>`;
+            
+            // Group by stream_id
+            const streamGroups = {};
+            data.uris.forEach(uri => {
+                if (!streamGroups[uri.stream_id]) {
+                    streamGroups[uri.stream_id] = [];
+                }
+                streamGroups[uri.stream_id].push(uri);
+            });
+
+            for (const [streamId, uris] of Object.entries(streamGroups)) {
+                html += `<div style="margin-bottom: 20px;">`;
+                html += `<div style="font-weight: 600; color: #666; margin-bottom: 10px; font-size: 14px;">
+                    Stream: ${streamId.substring(0, 50)}...
+                </div>`;
+                
+                uris.forEach(uri => {
+                    html += `
+                        <div class="variant-item">
+                            <div class="variant-info">
+                                <div class="variant-name">${uri.variant_name}</div>
+                                <div class="variant-url">${uri.uri}</div>
+                            </div>
+                            <button class="copy-btn" onclick="copyToClipboard('${uri.uri}')">Copy URL</button>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+            
+            html += '</div>';
+            resultDiv.innerHTML = html;
+        }
+
+        async function listStreams() {
+            const resultDiv = document.getElementById('streamsResult');
+            resultDiv.innerHTML = '<span class="loading"></span> Loading stream list...';
+
+            try {
+                const response = await fetch(`${API_BASE}/streams`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    showStreamsList(data);
+                    updateStats();
+                } else {
+                    showError('streamsResult', data.detail || 'Failed to list streams');
+                }
+            } catch (error) {
+                showError('streamsResult', `Error: ${error.message}`);
+            }
+        }
+
+        function showStreamsList(data) {
+            const resultDiv = document.getElementById('streamsResult');
+            
+            if (data.total_streams === 0) {
+                resultDiv.innerHTML = '<div class="error">No active streams found</div>';
+                return;
+            }
+
+            let html = '<div class="result-container">';
+            html += `<h3>Active Streams (${data.total_streams})</h3>`;
+            
+            for (const [streamId, streamData] of Object.entries(data.active_streams)) {
+                html += `<div style="margin-bottom: 20px; padding: 15px; background: white; border-radius: 6px; border: 1px solid #e0e0e0;">`;
+                html += `<div style="font-weight: 600; margin-bottom: 10px;">Stream ID: ${streamId}</div>`;
+                html += `<div style="font-size: 14px; color: #666;">Input URL: ${streamData.input_url}</div>`;
+                html += `<div style="font-size: 14px; color: #666; margin-top: 5px;">Variants: ${Object.keys(streamData.variants).length}</div>`;
+                html += `<button class="btn btn-danger" style="margin-top: 10px;" onclick="stopStream('${encodeURIComponent(streamId)}')">Stop Stream</button>`;
+                html += `</div>`;
+            }
+            
+            html += '</div>';
+            resultDiv.innerHTML = html;
+        }
+
+        async function stopStream(encodedStreamId) {
+            if (!confirm('Are you sure you want to stop this stream?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/streams/${encodedStreamId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    showSuccess('streamsResult', 'Stream stopped successfully');
+                    setTimeout(() => listStreams(), 1000);
+                } else {
+                    const data = await response.json();
+                    showError('streamsResult', data.detail || 'Failed to stop stream');
+                }
+            } catch (error) {
+                showError('streamsResult', `Error: ${error.message}`);
+            }
+        }
+
+        async function stopAllStreams() {
+            if (!confirm('Are you sure you want to stop ALL streams?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/streams`);
+                const data = await response.json();
+
+                if (response.ok && data.total_streams > 0) {
+                    for (const streamId of Object.keys(data.active_streams)) {
+                        await fetch(`${API_BASE}/streams/${encodeURIComponent(streamId)}`, {
+                            method: 'DELETE'
+                        });
+                    }
+                    showSuccess('streamsResult', 'All streams stopped successfully');
+                    updateStats();
+                } else {
+                    showError('streamsResult', 'No active streams to stop');
+                }
+            } catch (error) {
+                showError('streamsResult', `Error: ${error.message}`);
+            }
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                // Show temporary success message
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+                btn.style.background = '#28a745';
+                
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '';
+                }, 2000);
+            }).catch(err => {
+                alert('Failed to copy to clipboard');
+            });
+        }
+
+        function clearTranscodingForm() {
+            document.getElementById('inputUrl').value = '';
+            document.getElementById('outputHost').value = 'localhost';
+            document.getElementById('outputPort').value = '8080';
+            document.getElementById('transcodingResult').innerHTML = '';
+        }
+
+        function showError(elementId, message) {
+            document.getElementById(elementId).innerHTML = `<div class="error">❌ ${message}</div>`;
+        }
+
+        function showSuccess(elementId, message) {
+            document.getElementById(elementId).innerHTML = `<div class="success">✅ ${message}</div>`;
+        }
+
+        async function updateStats() {
+            try {
+                const response = await fetch(`${API_BASE}/uris`);
+                const data = await response.json();
+
+                document.getElementById('totalStreams').textContent = 
+                    [...new Set(data.uris.map(u => u.stream_id))].length;
+                document.getElementById('totalVariants').textContent = data.total_uris;
+
+                // Count unique codec types from variant names
+                const codecTypes = new Set();
+                data.uris.forEach(uri => {
+                    const codec = uri.variant_name.split('_')[0];
+                    codecTypes.add(codec);
+                });
+                document.getElementById('totalCodecs').textContent = codecTypes.size;
+            } catch (error) {
+                console.error('Failed to update stats:', error);
+            }
+        }
+
+        // Auto-refresh stats every 5 seconds
+        setInterval(updateStats, 5000);
+        
+        // Initial stats load
+        updateStats();
+    </script>
+</body>
+</html>
