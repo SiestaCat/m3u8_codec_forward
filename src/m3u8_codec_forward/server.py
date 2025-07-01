@@ -155,8 +155,8 @@ async def stop_stream(stream_id: str):
 
 
 @app.get("/{variant_name}.m3u8")
-async def serve_playlist(variant_name: str):
-    global transcoding_engine
+async def serve_playlist(variant_name: str, input_url: HttpUrl = None):
+    global transcoding_engine, active_streams
     
     if not transcoding_engine:
         raise HTTPException(status_code=500, detail="Transcoding engine not initialized")
@@ -164,7 +164,91 @@ async def serve_playlist(variant_name: str):
     playlist_path = transcoding_engine.working_dir / f"{variant_name}.m3u8"
     
     if not playlist_path.exists():
-        raise HTTPException(status_code=404, detail="Playlist not found")
+        # If no active transcoding and input_url provided, start transcoding automatically
+        if input_url and not active_streams:
+            try:
+                # Use default variants for auto-start
+                output_variants = [
+                    StreamVariant(
+                        codec=CodecType.H264,
+                        audio_codec=AudioCodec.AAC_LC,
+                        resolution=Resolution(width=1920, height=1080),
+                        bitrate=5000,
+                        framerate=30.0,
+                        container=ContainerFormat.TS
+                    ),
+                    StreamVariant(
+                        codec=CodecType.H264,
+                        audio_codec=AudioCodec.AAC_LC,
+                        resolution=Resolution(width=1280, height=720),
+                        bitrate=3000,
+                        framerate=30.0,
+                        container=ContainerFormat.TS
+                    ),
+                    StreamVariant(
+                        codec=CodecType.H265,
+                        audio_codec=AudioCodec.AAC_LC,
+                        resolution=Resolution(width=1920, height=1080),
+                        bitrate=3000,
+                        framerate=30.0,
+                        container=ContainerFormat.FMP4
+                    ),
+                    StreamVariant(
+                        codec=CodecType.VP9,
+                        audio_codec=AudioCodec.OPUS,
+                        resolution=Resolution(width=1280, height=720),
+                        bitrate=2500,
+                        framerate=30.0,
+                        container=ContainerFormat.WEBM
+                    )
+                ]
+                
+                config = TranscodingConfig(
+                    input_url=input_url,
+                    output_variants=output_variants,
+                    output_host="localhost",
+                    output_port=80
+                )
+                
+                variant_urls = await transcoding_engine.start_transcoding(config)
+                
+                stream_id = str(input_url)
+                active_streams[stream_id] = {
+                    "input_url": str(input_url),
+                    "variants": variant_urls,
+                    "config": config.model_dump()
+                }
+                
+                # Wait a moment for the playlist file to be created
+                import asyncio
+                await asyncio.sleep(1)
+                
+                # Check again if file exists
+                if playlist_path.exists():
+                    return FileResponse(
+                        path=str(playlist_path),
+                        media_type="application/vnd.apple.mpegurl",
+                        headers={"Cache-Control": "no-cache"}
+                    )
+                    
+            except Exception as e:
+                logger.error(f"Failed to auto-start transcoding: {e}")
+                raise HTTPException(
+                    status_code=500, 
+                    detail=f"Failed to auto-start transcoding for {variant_name}: {str(e)}"
+                )
+        
+        # Provide informative error message
+        if not active_streams:
+            raise HTTPException(
+                status_code=404, 
+                detail=f"Playlist '{variant_name}.m3u8' not found. No active transcoding streams. Start transcoding first with POST /start-transcoding or provide ?input_url=<stream_url> parameter."
+            )
+        else:
+            raise HTTPException(
+                status_code=404, 
+                detail=f"Playlist '{variant_name}.m3u8' not found. Available variants: {list(active_streams.keys())}"
+            )
     
     return FileResponse(
         path=str(playlist_path),
