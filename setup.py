@@ -9,7 +9,7 @@ setup(
     install_requires=[
         "fastapi>=0.104.1",
         "uvicorn>=0.24.0",
-        "httpx>=0.25.2",
+        "httpx>=0.23.3,<0.24.0",
         "m3u8>=3.5.0",
         "ffmpeg-python>=0.2.0",
         "pydantic>=2.5.0",

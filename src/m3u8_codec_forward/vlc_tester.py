@@ -77,10 +77,25 @@ class VLCTester:
                     vlc_output = log_file.read_text()
                 
                 result["vlc_output"] = vlc_output
-                result["playback_success"] = process.returncode == 0
                 
-                if process.returncode != 0:
-                    result["error"] = f"VLC exited with code {process.returncode}: {stderr.decode()}"
+                # Check for actual playback success - VLC might exit with 0 even on errors
+                stderr_text = stderr.decode().lower()
+                vlc_output_lower = vlc_output.lower()
+                
+                # Look for error indicators
+                has_errors = any(error_term in stderr_text or error_term in vlc_output_lower 
+                               for error_term in ['error', 'failed', 'cannot', 'unable', 'connection refused', 'not found'])
+                
+                # VLC returncode 0 AND no error indicators = success
+                result["playback_success"] = process.returncode == 0 and not has_errors
+                
+                if process.returncode != 0 or has_errors:
+                    error_msg = f"VLC exited with code {process.returncode}"
+                    if stderr_text:
+                        error_msg += f": {stderr.decode()}"
+                    if has_errors and vlc_output:
+                        error_msg += f" (VLC output contains errors)"
+                    result["error"] = error_msg
                 
                 # Extract stream information from VLC output
                 result["stream_info"] = self._parse_vlc_output(vlc_output)

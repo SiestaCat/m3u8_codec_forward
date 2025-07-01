@@ -105,7 +105,7 @@ class TestTranscodingConfig:
         
         assert str(config.input_url) == "http://example.com/input.m3u8"
         assert len(config.output_variants) == 1
-        assert config.output_port == 8080
+        assert config.output_port == 80
         assert config.output_host == "localhost"
     
     def test_transcoding_config_custom_settings(self):

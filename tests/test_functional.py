@@ -78,28 +78,28 @@ class TestFunctionalAPI:
     
     def test_health_endpoint(self):
         """Test basic health endpoint"""
-        with TestClient(app) as client:
-            response = client.get("/health")
-            assert response.status_code == 200
-            assert response.json()["status"] == "healthy"
+        client = TestClient(app)
+        response = client.get("/health")
+        assert response.status_code == 200
+        assert response.json()["status"] == "healthy"
     
     def test_root_endpoint(self):
         """Test root endpoint with service info"""
-        with TestClient(app) as client:
-            response = client.get("/")
-            assert response.status_code == 200
-            data = response.json()
-            assert data["service"] == "M3U8 Codec Forward"
-            assert "endpoints" in data
+        client = TestClient(app)
+        response = client.get("/")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["service"] == "M3U8 Codec Forward"
+        assert "endpoints" in data
     
     def test_list_streams_empty(self):
         """Test listing streams when none are active"""
-        with TestClient(app) as client:
-            response = client.get("/streams")
-            assert response.status_code == 200
-            data = response.json()
-            assert data["total_streams"] == 0
-            assert data["active_streams"] == {}
+        client = TestClient(app)
+        response = client.get("/streams")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["total_streams"] == 0
+        assert data["active_streams"] == {}
     
     @patch('m3u8_codec_forward.transcoder.TranscodingEngine.start_transcoding')
     @patch('m3u8_codec_forward.parser.M3U8Parser.get_master_playlist_info')
@@ -117,22 +117,22 @@ class TestFunctionalAPI:
         
         # Mock the transcoding start
         mock_start_transcoding.return_value = {
-            "h264_1920x1080_5000k_ts": "http://localhost:8080/h264_1920x1080_5000k_ts.m3u8",
-            "h264_1280x720_3000k_ts": "http://localhost:8080/h264_1280x720_3000k_ts.m3u8"
+            "h264_1920x1080_5000k_ts": "http://localhost:80/h264_1920x1080_5000k_ts.m3u8",
+            "h264_1280x720_3000k_ts": "http://localhost:80/h264_1280x720_3000k_ts.m3u8"
         }
         
-        with TestClient(app) as client:
-            response = client.post(
-                "/start-transcoding",
-                params={"input_url": APPLE_TEST_STREAM}
-            )
-            
-            assert response.status_code == 200
-            data = response.json()
-            assert "message" in data
-            assert "stream_id" in data
-            assert "variants" in data
-            assert len(data["variants"]) > 0
+        client = TestClient(app)
+        response = client.post(
+            "/start-transcoding",
+            params={"input_url": APPLE_TEST_STREAM}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()
+        assert "message" in data
+        assert "stream_id" in data
+        assert "variants" in data
+        assert len(data["variants"]) > 0
 
 
 class TestFunctionalTranscoding:
@@ -292,7 +292,7 @@ class TestFunctionalIntegration:
                 assert "h265_1920x1080_4000k_fmp4" in variant_urls
                 
                 for url in variant_urls.values():
-                    assert url.startswith("http://localhost:8080/")
+                    assert url.startswith("http://localhost:80/")
                     assert url.endswith(".m3u8")
                     
         finally:

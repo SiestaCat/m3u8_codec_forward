@@ -11,7 +11,7 @@ class TestAppConfig:
     def test_app_config_defaults(self):
         config = AppConfig()
         assert config.server_host == "0.0.0.0"
-        assert config.server_port == 8080
+        assert config.server_port == 80
         assert config.working_dir is None
         assert config.log_level == "INFO"
         assert config.max_concurrent_streams == 5
