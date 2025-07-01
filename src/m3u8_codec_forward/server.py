@@ -37,7 +37,7 @@ async def start_transcoding(
     input_url: HttpUrl,
     background_tasks: BackgroundTasks,
     output_host: str = "localhost",
-    output_port: int = 80
+    output_port: int = 8080
 ):
     global transcoding_engine, active_streams
     
@@ -207,7 +207,7 @@ async def serve_playlist(variant_name: str, input_url: HttpUrl = None):
                     input_url=input_url,
                     output_variants=output_variants,
                     output_host="localhost",
-                    output_port=80
+                    output_port=8080
                 )
                 
                 variant_urls = await transcoding_engine.start_transcoding(config)
